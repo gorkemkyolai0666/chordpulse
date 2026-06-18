@@ -1,0 +1,9 @@
+.env
+.env.*
+!.env.example
+backend/.railway/config.json
+
+node_modules/
+dist/
+.next/
+coverage/

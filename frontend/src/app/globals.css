@@ -1,0 +1,113 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Nunito+Sans:ital,opsz,wght@0,6..12,400;0,6..12,500;0,6..12,600;0,6..12,700;1,6..12,400&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 36 43% 96%;
+    --foreground: 24 28% 14%;
+    --card: 0 0% 100%;
+    --card-foreground: 24 28% 14%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 24 28% 14%;
+    --primary: 22 52% 50%;
+    --primary-foreground: 36 43% 98%;
+    --secondary: 24 32% 22%;
+    --secondary-foreground: 36 43% 96%;
+    --muted: 36 20% 90%;
+    --muted-foreground: 24 12% 42%;
+    --accent: 22 52% 50%;
+    --accent-foreground: 36 43% 98%;
+    --destructive: 0 72% 48%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 152 35% 36%;
+    --success-foreground: 0 0% 100%;
+    --warning: 32 80% 48%;
+    --warning-foreground: 24 28% 14%;
+    --walnut: 24 32% 22%;
+    --copper: 22 52% 50%;
+    --ivory: 36 43% 96%;
+    --border: 36 16% 84%;
+    --input: 36 16% 84%;
+    --ring: 22 52% 50%;
+    --radius: 2px;
+  }
+
+  .dark {
+    --background: 24 20% 9%;
+    --foreground: 36 30% 94%;
+    --card: 24 18% 12%;
+    --card-foreground: 36 30% 94%;
+    --popover: 24 18% 12%;
+    --popover-foreground: 36 30% 94%;
+    --primary: 22 48% 55%;
+    --primary-foreground: 24 20% 9%;
+    --secondary: 36 30% 94%;
+    --secondary-foreground: 24 20% 9%;
+    --muted: 24 12% 18%;
+    --muted-foreground: 36 12% 62%;
+    --accent: 22 48% 55%;
+    --accent-foreground: 24 20% 9%;
+    --destructive: 0 62% 48%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 152 35% 42%;
+    --success-foreground: 0 0% 100%;
+    --warning: 32 75% 50%;
+    --warning-foreground: 24 20% 9%;
+    --border: 24 10% 22%;
+    --input: 24 10% 22%;
+    --ring: 22 48% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Nunito Sans', system-ui, sans-serif;
+  }
+  h1, h2, h3, .font-display {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    letter-spacing: -0.03em;
+    font-weight: 600;
+  }
+}
+
+@layer components {
+  .cp-workshop-bg {
+    @apply bg-background;
+    background-image:
+      repeating-linear-gradient(
+        90deg,
+        hsl(var(--copper) / 0.03) 0px,
+        hsl(var(--copper) / 0.03) 1px,
+        transparent 1px,
+        transparent 24px
+      ),
+      radial-gradient(ellipse at 0% 100%, hsl(var(--copper) / 0.1), transparent 55%);
+  }
+
+  .cp-sidebar {
+    @apply border-r border-border/70 bg-card;
+  }
+
+  .cp-sidebar-link {
+    @apply flex items-center gap-3 rounded-sm px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground;
+  }
+
+  .cp-sidebar-link[data-active='true'] {
+    @apply border-l-2 border-primary bg-primary/10 pl-[10px] text-foreground;
+  }
+
+  .cp-wave-accent {
+    @apply h-1 w-24 rounded-sm bg-gradient-to-r from-primary via-primary/60 to-transparent;
+  }
+
+  .cp-stat-card {
+    @apply rounded-sm border border-border/70 bg-card p-5 shadow-sm;
+  }
+}

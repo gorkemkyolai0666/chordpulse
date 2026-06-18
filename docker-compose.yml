@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: chordpulse
+      POSTGRES_PASSWORD: chordpulse123
+      POSTGRES_DB: chordpulse
+    ports:
+      - '5451:5432'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U chordpulse']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    ports:
+      - '4029:4029'
+    environment:
+      DATABASE_URL: postgresql://chordpulse:chordpulse123@postgres:5432/chordpulse?schema=public
+      JWT_SECRET: chordpulse-dev-secret
+      FRONTEND_URL: http://localhost:3029
+      PORT: 4029
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: npm run deploy
+
+  frontend:
+    build: ./frontend
+    ports:
+      - '3029:3029'
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:4029/api
+    depends_on:
+      - backend

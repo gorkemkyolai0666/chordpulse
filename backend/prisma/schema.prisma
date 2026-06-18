@@ -1,0 +1,230 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  owner
+  manager
+  designer
+}
+
+enum OrderStatus {
+  quoted
+  sourcing
+  preparing
+  arranging
+  ready
+  delivered
+  cancelled
+}
+
+enum OrderType {
+  wedding
+  funeral
+  corporate
+  retail
+  subscription
+  seasonal
+}
+
+enum InstrumentCondition {
+  fresh
+  conditioning
+  arranged
+  wilted
+  discarded
+}
+
+enum InstrumentStatus {
+  in_stock
+  reserved
+  sold
+  expired
+}
+
+enum HandoffStatus {
+  scheduled
+  loading
+  en_route
+  delivered
+  cancelled
+}
+
+enum HandoffType {
+  wedding
+  event
+  wholesale
+  subscription
+  rush
+}
+
+enum BenchStatus {
+  scheduled
+  in_progress
+  completed
+  cancelled
+  full
+}
+
+enum PartCategory {
+  rose
+  tropical
+  foliage
+  seasonal
+  dried
+  other
+}
+
+enum PartStatus {
+  active
+  seasonal
+  discontinued
+}
+
+model Firm {
+  id             String   @id @default(uuid())
+  name           String
+  phone          String?
+  address        String?
+  city           String?
+  state          String?
+  zipCode        String?  @map("zip_code")
+  totalRepairBenches Int      @default(2) @map("total_cold_rooms")
+  timezone       String   @default("Europe/Istanbul")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  users                 User[]
+  repairOrders          RepairOrder[]
+  instrumentItems              InstrumentItem[]
+  handoffJobs          HandoffJob[]
+  serviceBenches  ServiceBench[]
+  spareParts SparePart[]
+
+  @@map("firms")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  firstName    String   @map("first_name")
+  lastName     String   @map("last_name")
+  role         UserRole @default(owner)
+  firmId       String   @map("firm_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  firm Firm @relation(fields: [firmId], references: [id], onDelete: Cascade)
+
+  @@map("users")
+}
+
+model RepairOrder {
+  id           String      @id @default(uuid())
+  firmId       String      @map("firm_id")
+  orderNumber  String      @map("order_number")
+  clientName   String      @map("client_name")
+  orderType    OrderType   @default(wedding) @map("order_type")
+  instrumentCount    Int         @default(1) @map("stem_count")
+  status       OrderStatus @default(quoted)
+  dueDate      DateTime?   @map("due_date") @db.Date
+  benchName String?     @map("cold_room_name")
+  notes        String?
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
+
+  firm         Firm          @relation(fields: [firmId], references: [id], onDelete: Cascade)
+  handoffJobs HandoffJob[]
+  instrumentItems     InstrumentItem[]
+
+  @@unique([firmId, orderNumber])
+  @@index([firmId, status])
+  @@map("repair_orders")
+}
+
+model InstrumentItem {
+  id         String        @id @default(uuid())
+  firmId     String        @map("firm_id")
+  orderId    String?       @map("order_id")
+  instrumentName    String        @map("lot_name")
+  instrumentFamily String?       @map("flower_type")
+  condition  InstrumentCondition @default(fresh)
+  status     InstrumentStatus    @default(in_stock)
+  laborHours Float?        @map("bunch_count")
+  notes      String?
+  createdAt  DateTime      @default(now()) @map("created_at")
+  updatedAt  DateTime      @updatedAt @map("updated_at")
+
+  firm  Firm         @relation(fields: [firmId], references: [id], onDelete: Cascade)
+  order RepairOrder? @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  @@index([firmId, condition])
+  @@map("instrument_items")
+}
+
+model HandoffJob {
+  id           String         @id @default(uuid())
+  firmId       String         @map("firm_id")
+  orderId      String         @map("order_id")
+  handoffName String         @map("delivery_name")
+  handoffType HandoffType   @default(wedding) @map("delivery_type")
+  benchName String?        @map("cold_room_name")
+  travelKm      Int?           @map("route_km")
+  caseLoad  Float?         @map("vehicle_load")
+  scheduledAt  DateTime       @map("scheduled_at")
+  status       HandoffStatus @default(scheduled)
+  notes        String?
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
+
+  firm  Firm        @relation(fields: [firmId], references: [id], onDelete: Cascade)
+  order RepairOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([firmId, status])
+  @@index([firmId, scheduledAt])
+  @@map("handoff_jobs")
+}
+
+model ServiceBench {
+  id          String         @id @default(uuid())
+  firmId      String         @map("firm_id")
+  title       String
+  description String?
+  instructor  String?
+  scheduledAt DateTime       @map("scheduled_at")
+  maxStudents Int            @default(8) @map("max_students")
+  enrolled    Int            @default(0)
+  status      BenchStatus @default(scheduled)
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
+
+  firm Firm @relation(fields: [firmId], references: [id], onDelete: Cascade)
+
+  @@index([firmId, scheduledAt])
+  @@map("service_benches")
+}
+
+model SparePart {
+  id              String          @id @default(uuid())
+  firmId          String          @map("firm_id")
+  title           String
+  partCategory PartCategory @default(rose) @map("variety_category")
+  status          PartStatus   @default(active)
+  shelfLifeDays   Int?            @map("shelf_life_days")
+  pricePerUnit   Float           @map("price_per_bunch")
+  leadDays        Float?          @map("lead_days")
+  notes           String?
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+
+  firm Firm @relation(fields: [firmId], references: [id], onDelete: Cascade)
+
+  @@index([firmId, partCategory])
+  @@map("spare_parts")
+}
